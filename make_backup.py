@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 from datetime import datetime
 import psutil
-
+import time
 
 def get_save_folder_path():
     original_folder_path = Path.home() / "AppData" / "LocalLow" / "TheFarmerWasReplaced" / "TheFarmerWasReplaced" / "Saves"
@@ -42,3 +42,25 @@ def is_game_running():
         if proc.info['name'] == process_name:
             return True
     return False
+
+previous_state = None
+current_state = is_game_running()
+
+print("Monitoring the game process...")
+
+while True:
+    current_state = is_game_running()
+    if previous_state is False and current_state is True:
+        print("The game has started")
+
+    elif previous_state is True and current_state is False:
+        print("The game has stopped")
+        original_folder_path = get_save_folder_path()
+        if original_folder_path:
+            if backup_save_files(original_folder_path):
+                print("Backup process completed!")
+            else:
+                print("Backup process failed")
+
+    previous_state = current_state
+    time.sleep(3)  #3秒ごとに監視
